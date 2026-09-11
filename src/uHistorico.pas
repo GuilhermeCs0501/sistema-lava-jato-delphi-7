@@ -1,0 +1,148 @@
+unit uHistorico;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls, DBGrids, DB, ADODB, Grids, jpeg;
+
+type
+  TfrmHistorico = class(TForm)
+    pnlTitulo: TPanel;
+    lblTitulo: TLabel;
+    pnlFiltro: TPanel;
+    lblDe: TLabel;
+    edtDe: TEdit;
+    lblAte: TLabel;
+    edtAte: TEdit;
+    btnFiltrar: TButton;
+    btnLimpar: TButton;
+    DBGrid1: TDBGrid;
+    btnVoltar: TButton;
+    Image1: TImage;
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure btnFiltrarClick(Sender: TObject);
+    procedure btnLimparClick(Sender: TObject);
+    procedure btnVoltarClick(Sender: TObject);
+  private
+    FqryHistorico: TADOQuery;
+    FdsHistorico:  TDataSource;
+    procedure CarregarTodos;
+  public
+    { Public declarations }
+  end;
+
+var
+  frmHistorico: TfrmHistorico;
+
+implementation
+
+uses uDM;
+
+{$R *.dfm}
+
+{ Cria os componentes responsáveis pela consulta dos dados e configura o DBGrid para exibição do histórico }
+procedure TfrmHistorico.FormCreate(Sender: TObject);
+begin
+  // Cria a consulta que será utilizada para buscar as lavagens
+  FqryHistorico := TADOQuery.Create(Self);
+  FqryHistorico.Connection := dmLavaJato.ADOConnection;
+  FqryHistorico.CursorType := ctStatic;
+
+  FdsHistorico := TDataSource.Create(Self);
+  FdsHistorico.DataSet := FqryHistorico;
+  // Cria a fonte de dados que ligará a consulta ao DBGrid
+  DBGrid1.DataSource := FdsHistorico;
+  DBGrid1.ReadOnly   := True;
+  // Define um período padrão para pesquisa
+  edtDe.Text  := DateToStr(Date - 30);
+  edtAte.Text := DateToStr(Date);
+end;
+
+{ Carrega todas as lavagens ao abrir a tela }
+procedure TfrmHistorico.FormShow(Sender: TObject);
+begin
+  CarregarTodos;
+end;
+
+{ Libera da memória os objetos criados dinamicamente }
+procedure TfrmHistorico.FormDestroy(Sender: TObject);
+begin
+  FdsHistorico.Free;
+  FqryHistorico.Free;
+end;
+
+{ Exibe todas as lavagens cadastradas, ordenadas da mais recente para a mais antiga }
+procedure TfrmHistorico.CarregarTodos;
+begin
+  // Converte a data para o formato brasileiro (DD/MM/AAAA)
+  // Ordena os registros por data decrescente
+  FqryHistorico.Close;
+  FqryHistorico.SQL.Text :=
+    'SELECT Id, CONVERT(varchar(10), DataLavagem, 103) AS Data, ' +
+    'Cliente, Placa, Servico, Valor ' +
+    'FROM Lavagens ORDER BY DataLavagem DESC, Id DESC';
+  FqryHistorico.Open;
+  edtDe.Text  := '';
+  edtAte.Text := '';
+end;
+
+{ Realiza a pesquisa das lavagens dentro do período informado pelo usuário }
+procedure TfrmHistorico.btnFiltrarClick(Sender: TObject);
+var
+  dDe, dAte: TDateTime;
+begin
+  if Trim(edtDe.Text) = '' then
+  begin
+    // Verifica se a data inicial foi informada
+    ShowMessage('Informe a data inicial.');
+    edtDe.SetFocus;
+    Exit;
+  end;
+  if Trim(edtAte.Text) = '' then
+  begin
+    // Verifica se a data final foi informada
+    ShowMessage('Informe a data final.');
+    edtAte.SetFocus;
+    Exit;
+  end;
+  try
+    // Converte os textos digitados para datas válidas
+    dDe  := StrToDate(edtDe.Text);
+    dAte := StrToDate(edtAte.Text);
+  except
+    ShowMessage('Data inv'#225'lida. Use o formato DD/MM/AAAA.');
+    Exit;
+  end;
+  // Filtra apenas os registros dentro do período informado
+  // Passa as datas como parâmetros da consulta SQL
+  // Retorna somente as lavagens realizadas entre as datas selecionadas
+  FqryHistorico.Close;
+  FqryHistorico.SQL.Text :=
+    'SELECT Id, CONVERT(varchar(10), DataLavagem, 103) AS Data, ' +
+    'Cliente, Placa, Servico, Valor ' +
+    'FROM Lavagens ' +
+    'WHERE DataLavagem BETWEEN :De AND :Ate ' +
+    'ORDER BY DataLavagem DESC, Id DESC';
+  FqryHistorico.Parameters.ParamByName('De').Value  := dDe;
+  FqryHistorico.Parameters.ParamByName('Ate').Value := dAte;
+  FqryHistorico.Open;
+end;
+
+{ Remove os filtros aplicados e exibe novamente todas as lavagens cadastradas }
+procedure TfrmHistorico.btnLimparClick(Sender: TObject);
+begin
+  CarregarTodos;
+end;
+
+{ Fecha a tela de histórico }
+procedure TfrmHistorico.btnVoltarClick(Sender: TObject);
+begin
+     Close;
+end;
+
+end.
+
+

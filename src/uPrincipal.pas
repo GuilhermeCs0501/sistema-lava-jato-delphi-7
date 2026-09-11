@@ -1,0 +1,107 @@
+unit uPrincipal;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Menus,
+  uLavagens, uCustoFixo, uCustoVariavel, uHistorico, uFinanceiro, uRelatorioCusto,
+  StdCtrls, ExtCtrls;
+
+type
+  TfrmPrincipal = class(TForm)
+    MainMenu1: TMainMenu;
+    Sair1: TMenuItem;
+    pnlHeader: TPanel;
+    lblTitulo: TLabel;
+    pnlCentral: TPanel;
+    pnlCadastro: TPanel;
+    pnlSevicos: TPanel;
+    pnlRelatorio: TPanel;
+    lblCadastro: TLabel;
+    lblServico: TLabel;
+    lblRelatorio: TLabel;
+    btnCustoFixo: TButton;
+    btnCustoVariavel: TButton;
+    btnLavagens: TButton;
+    Button1: TButton;
+    btnFinanceiro: TButton;
+    btnCusto: TButton;
+    procedure Sair1Click(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure btnCustoFixoClick(Sender: TObject);
+    procedure btnCustoVariavelClick(Sender: TObject);
+    procedure btnLavagensClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure btnFinanceiroClick(Sender: TObject);
+    procedure btnCustoClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmPrincipal: TfrmPrincipal;
+
+implementation
+
+{$R *.dfm}
+
+ { Fecha a aplicação }
+procedure TfrmPrincipal.Sair1Click(Sender: TObject);
+begin
+  Application.Terminate;
+end;
+
+ { Centraliza o painel principal }
+procedure TfrmPrincipal.FormResize(Sender: TObject);
+begin
+   pnlCentral.Left := (ClientWidth - pnlCentral.Width) div 2;
+  pnlCentral.Top  := (ClientHeight - pnlCentral.Height) div 2;
+end;
+
+    { Chama o método de centralização do painel }
+procedure TfrmPrincipal.FormCreate(Sender: TObject);
+begin
+ FormResize(Sender);
+end;
+
+    { Abre a tela de cadastro de custos fixos }
+procedure TfrmPrincipal.btnCustoFixoClick(Sender: TObject);
+begin
+      frmCustoFixo.Show;
+end;
+
+    { Abre a tela de cadastro de custos variáveis }
+procedure TfrmPrincipal.btnCustoVariavelClick(Sender: TObject);
+begin
+     frmCustoVariavel.Show;
+end;
+
+    { Abre a tela de cadastro de lavagens realizadas }
+procedure TfrmPrincipal.btnLavagensClick(Sender: TObject);
+begin
+    frmLavagens.Show;
+end;
+
+   { Abre a tela de histórico de lavagens }
+procedure TfrmPrincipal.Button1Click(Sender: TObject);
+begin
+   frmHistorico.Show;
+end;
+
+   { Abre a tela de análise financeira }
+procedure TfrmPrincipal.btnFinanceiroClick(Sender: TObject);
+begin
+    frmFinanceiro.Show;
+end;
+
+    { Abre o relatório de custos do sistema }
+procedure TfrmPrincipal.btnCustoClick(Sender: TObject);
+begin
+   frmRelatorioCusto.Show;
+end;
+
+end.
